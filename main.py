@@ -1,6 +1,7 @@
-from docxtpl import DocxTemplate
-from csv import reader
 from codecs import open
+from csv import reader
+from docxtpl import DocxTemplate
+from tqdm import tqdm
 
 
 def create_dataset(file_name):
@@ -15,11 +16,19 @@ def create_dataset(file_name):
     return dataset
 
 
-if __name__ == '__main__':
-    data = create_dataset('Data123.csv')
-    for count, value in enumerate(data):
-        filename = str(count).zfill(4) + '_' + value['protocol_number'].replace('\\', '-').replace("/", '-') + '.docx'
-        print(filename)
-        doc = DocxTemplate('template.docx')
+def create_documents(data, file_template, key_header, file_extention):
+    filenames = []
+    for count, value in enumerate(tqdm(data)):
+        filename = str(count).zfill(4) + '_' + \
+            value[key_header].replace('\\', '-').replace("/", '-') + \
+            file_extention
+        filenames.append(filename)
+        doc = DocxTemplate(file_template)
         doc.render(value)
         doc.save(filename)
+    print("\n".join(filenames))
+
+
+if __name__ == '__main__':
+    data_set = create_dataset('Data.csv')
+    create_documents(data_set, 'template.docx', 'protocol_number', '.docx')
